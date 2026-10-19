@@ -1,4 +1,5 @@
 import java.util.*;
+import java.io.*;
 
 class Reading{
     static final double MIN_PH = 7.2;
@@ -23,9 +24,41 @@ class Reading{
     }
 }
 public class Main{
+    static final String FILE = "readings.txt";
+    
+    static void saveLog(ArrayList<Reading> log){
+        try {
+            PrintWriter out = new PrintWriter(new FileWriter(FILE));
+            for(Reading r : log){
+                out.println(r.date + "," + r.ph + "," + r.chlorine);
+            }
+            out.close();
+        } catch(IOException e){
+            System.out.println("Could not save: " + e.getMessage());
+        }
+    }
+    
+    static ArrayList<Reading> loadLog(){
+        ArrayList<Reading> log = new ArrayList<>();
+        try{
+            Scanner fileIn = new Scanner(new File(FILE));
+            while(fileIn.hasNextLine()){
+                String line = fileIn.nextLine();
+                String[] parts = line.split(",");
+                Reading r = new Reading(parts[0], Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
+                log.add(r);
+            }
+            fileIn.close();
+        } catch(FileNotFoundException e){
+            return log;
+        }
+        return log;
+    }
+    
+    
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
-        ArrayList<Reading> log = new ArrayList<>();
+        ArrayList<Reading> log = loadLog();
         while(true){
             System.out.println("What is the date for your reading? (or type done):");
             String date = sc.next();
@@ -41,6 +74,7 @@ public class Main{
             log.add(r);
             
         }
+        saveLog(log);
         System.out.println("Total readings: " + log.size());
         for(Reading r : log){
             if(r.isOutOfRange()) System.out.println("Bad reading: " + r);
